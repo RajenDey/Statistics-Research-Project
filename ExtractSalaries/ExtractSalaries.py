@@ -12,14 +12,15 @@ def find_district_links(soup, first_district, last_district):
     passed_first = False
 
     for link in soup.findAll('a', attrs={'href': re.compile("^http://")}):
+
         # check if passed the first district link
-        # first district: highline
-        district_url = "http://data.kitsapsun.com/projects/wa-school/district/17401/"
         if link.get("href") == first_district:
             passed_first = True
+
         # now these are the district links, so add the link to links[]
         if passed_first:
             district_links.append(link.get('href'))
+
         # last link. Add it to links[] then break
         if link.get('href') == last_district:
             break
@@ -245,54 +246,51 @@ def to_csv(teacher_names, schools, districts, base_salary, other_salary, total_f
         df.to_csv("WashingtonTeacherData.csv")
     else:
         df.to_csv("WashingtonTeacherData.csv", mode="a", header=False)
-    print("TO CSV COMPLETE")
 
 
+# threads call find_district_links with different first and last districts
 def thread_init(soup, first, last):
     links = find_district_links(soup, first, last)
     print(links)
     extract_data(links)
+
 
 def main():
     # load up the html for the page
     html_page = urllib.request.urlopen("http://data.kitsapsun.com/projects/wa-school/")
     soup = BeautifulSoup(html_page, "html.parser")
 
-    # highline to mossyrock
+    # multithread
+
+    # highline (first) to davenport
     t1 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/17401/"
-                                                    , "http://data.kitsapsun.com/projects/wa-school/district/21206/"))
+                                                    , "http://data.kitsapsun.com/projects/wa-school/district/22207/"))
 
-    # napavine to cusick
-    t2 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/21014/"
-                                                    , "http://data.kitsapsun.com/projects/wa-school/district/26059/"))
+    # harrington to sedro-woolley
+    t2 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/22204/"
+                                                    , "http://data.kitsapsun.com/projects/wa-school/district/29101/"))
 
-    # newport to sultan
-    t3 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/26056/"
-                                                    , "http://data.kitsapsun.com/projects/wa-school/district/31311/"))
+    # mill a to rainier
+    t3 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/30031/"
+                                                    , "http://data.kitsapsun.com/projects/wa-school/district/34307/"))
 
-    # central valley to zillah (last)
-    t4 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/32356/"
+    # rochester to zillah (last)
+    t4 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/34401/"
                                                     , "http://data.kitsapsun.com/projects/wa-school/district/39205/"))
 
+    # start threads
     t1.start()
     t2.start()
     t3.start()
     t4.start()
     print("started")
 
+    # join threads
     t1.join()
     t2.join()
     t3.join()
     t4.join()
     print("joined")
-
-    # find the links to all the districts
-   # links = find_district_links(soup, "http://data.kitsapsun.com/projects/wa-school/district/17401/",
-    #                            "http://data.kitsapsun.com/projects/wa-school/district/39205/")
-    #print(links)
-
-    # extract the data
-   # extract_data(links)
 
 
 if __name__ == "__main__":
