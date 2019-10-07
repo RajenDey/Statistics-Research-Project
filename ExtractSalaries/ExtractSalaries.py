@@ -262,21 +262,22 @@ def main():
 
     # multithread
 
-    # highline (first) to davenport
-    t1 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/17401/"
+    # vader doesn't exist
+    # whitepass to whitepass
+    t1 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/21303/"
+                                                    , "http://data.kitsapsun.com/projects/wa-school/district/21303/"))
+
+    # winlock to winlock
+    t2 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/21232/"
+                                                    , "http://data.kitsapsun.com/projects/wa-school/district/21232/"))
+
+    # almira to almira
+    t3 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/22017/"
+                                                    , "http://data.kitsapsun.com/projects/wa-school/district/22017/"))
+
+    # davenport to davenport
+    t4 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/22207/"
                                                     , "http://data.kitsapsun.com/projects/wa-school/district/22207/"))
-
-    # harrington to sedro-woolley
-    t2 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/22204/"
-                                                    , "http://data.kitsapsun.com/projects/wa-school/district/29101/"))
-
-    # mill a to rainier
-    t3 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/30031/"
-                                                    , "http://data.kitsapsun.com/projects/wa-school/district/34307/"))
-
-    # rochester to zillah (last)
-    t4 = threading.Thread(target=thread_init, args=(soup, "http://data.kitsapsun.com/projects/wa-school/district/34401/"
-                                                    , "http://data.kitsapsun.com/projects/wa-school/district/39205/"))
 
     # start threads
     t1.start()
