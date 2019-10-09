@@ -3,30 +3,52 @@ import pandas as pd
 import numpy as np
 import collections
 from scipy import stats
+from mpl_toolkits import mplot3d
 
 
-# plot average teacher salary of a school with the average test score of that school
+# plot salary vs scores and salary and experience vs scores
 def salary_vs_test_scores(df_teachers, df_scores, subject):
 
-    # first do the salary stuff
+    # first do the salary and experience stuff
     salaries = df_teachers["Total Final Salary"]
     schools = df_teachers["School"]
     school_list = []
     salaries_by_school = []
+    experience = df_teachers["Certificated Experience"]
+    experience_by_school = []
 
-    # create a 2d list of individual teacher salaries for each school
+    # create a 2d list of individual teacher salaries and experiences for each school
     for i in range(len(salaries)):
-        if schools[i] not in school_list:
+
+        # if the experience for the teacher is not available, skip that teacher
+        if str(experience[i]) == "" or str(experience[i]) == "nan":
+            continue
+        elif schools[i] not in school_list:
             school_list.append(schools[i])
             salaries_by_school.append([salary_to_float(salaries[i])])
+
+            # turn experience into a float
+            experience_without_years = str(experience[i]).replace("years", "")
+            experience_float = float(experience_without_years.replace(" ", ""))
+            experience_by_school.append([experience_float])
         else:
             school_index = school_list.index(schools[i])
             salaries_by_school[school_index].append(salary_to_float(salaries[i]))
 
-    # compute the average salary for that school
+            # turn experience into a float
+            experience_without_years = str(experience[i]).replace("years", "")
+            experience_float = float(experience_without_years.replace(" ", ""))
+            experience_by_school[school_index].append(experience_float)
+
+    # compute the average salary for each school
     average_school_salary = []
     for school in salaries_by_school:
         average_school_salary.append(int(np.mean(school)))
+
+    average_school_experience = []
+    # compute the average experience for each school
+    for school in experience_by_school:
+        average_school_experience.append(np.mean(school))
 
     # now do the test score stuff
     scores = df_scores["PercentMetStandard"]
@@ -62,6 +84,7 @@ def salary_vs_test_scores(df_teachers, df_scores, subject):
     common_schools2 = []
     common_average_school_salaries = []
     common_average_scores_by_school = []
+    common_average_school_experience = []
 
     for i in range(len(school_list)):
         if i >= len(only_schools):
@@ -71,30 +94,44 @@ def salary_vs_test_scores(df_teachers, df_scores, subject):
             common_schools2.append(only_schools[i])
             common_average_school_salaries.append(average_school_salary[i])
             common_average_scores_by_school.append(average_scores_by_school[i])
+            common_average_school_experience.append(average_school_experience[i])
 
-    # sort the average salaries and average test scores to correspond to the same school
+    # sort the average salaries, average experiences, and average test scores to correspond to the same school
     salary_dict = dict(zip(common_schools1, common_average_school_salaries))
     scores_dict = dict(zip(common_schools2, common_average_scores_by_school))
+    experience_dict = dict(zip(common_schools1, common_average_school_experience))
     sorted_salary_dict = collections.OrderedDict(sorted(salary_dict.items()))
     sorted_scores_dict = collections.OrderedDict(sorted(scores_dict.items()))
+    sorted_experience_dict = collections.OrderedDict(sorted(experience_dict.items()))
     salaries = list(sorted_salary_dict.values())
     scores = list(sorted_scores_dict.values())
+    experiences = list(sorted_experience_dict.values())
 
-    # print statistics
+    # print statistics for salaries vs scores
     slope, intercept, r, p_value, std_err = stats.linregress(salaries, scores)
     print("Slope: " + str('%.3f' % slope))
     print("Intercept: " + str('%.3f' % intercept))
     print("r: " + str('%.3f' % r))
-    print("R^2: " + str('%.3f' % (r*r*100)) + " %")
+    print("R^2: " + str('%.3f' % (r*r*100)) + "%")
     print("P Value: " + str('%.3f' % p_value))
     print("Standard Error: " + str('%.3f' % std_err))
 
-    # plot the data and line of best fit
+    # 2d plot and line of best fit of just salaries and scores
     plt.scatter(salaries, scores, s=1)
     plt.plot(np.unique(salaries), np.poly1d(np.polyfit(salaries, scores, 1))(np.unique(salaries)), color="red")
     plt.title("Average Test Score vs Average Teacher Salary of Washington Schools")
     plt.xlabel("Average Teacher Salary of School (Dollars)")
     plt.ylabel("Average Percentage Met Standard in School Over All Grades for " + subject)
+    plt.show()
+    plt.close()
+
+    # 3d plot of salaries, experiences and scores
+    fig = plt.figure()
+    ax = mplot3d.Axes3D(fig)
+    ax.scatter(salaries, experiences, scores, s=4)
+    ax.set_xlabel("Average Teacher Salary of School (Dollars)")
+    ax.set_ylabel("Average Teacher Experience of School (Years)")
+    ax.set_zlabel("Average Percentage Met Standard in School Over All Grades for " + subject)
     plt.show()
 
 
@@ -190,10 +227,10 @@ def salary_to_float(salary):
 def main():
     df_teachers = pd.read_csv("WashingtonTeacherData.csv")
     df_scores = pd.read_csv("Assessment_GradeLevel_Dashboard.csv")
-    final_salary_vs_experience(df_teachers)
-    salary_hist(df_teachers)
-    male_vs_female_pay(df_teachers)
-    test_scores_hist(df_scores)
+    #final_salary_vs_experience(df_teachers)
+    #salary_hist(df_teachers)
+    #male_vs_female_pay(df_teachers)
+    #test_scores_hist(df_scores)
     salary_vs_test_scores(df_teachers, df_scores, "Math")
 
 
