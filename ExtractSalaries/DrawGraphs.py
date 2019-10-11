@@ -7,14 +7,17 @@ from mpl_toolkits import mplot3d
 
 
 # plot salary vs scores and salary and experience vs scores
+from sklearn.linear_model import LinearRegression
+
+
 def salary_vs_test_scores(df_teachers, df_scores, subject):
 
     # first do the salary and experience stuff
     salaries = df_teachers["Total Final Salary"]
     schools = df_teachers["School"]
+    experience = df_teachers["Certificated Experience"]
     school_list = []
     salaries_by_school = []
-    experience = df_teachers["Certificated Experience"]
     experience_by_school = []
 
     # create a 2d list of individual teacher salaries and experiences for each school
@@ -45,8 +48,8 @@ def salary_vs_test_scores(df_teachers, df_scores, subject):
     for school in salaries_by_school:
         average_school_salary.append(int(np.mean(school)))
 
-    average_school_experience = []
     # compute the average experience for each school
+    average_school_experience = []
     for school in experience_by_school:
         average_school_experience.append(np.mean(school))
 
@@ -109,10 +112,13 @@ def salary_vs_test_scores(df_teachers, df_scores, subject):
 
     # print statistics for salaries vs scores
     slope, intercept, r, p_value, std_err = stats.linregress(salaries, scores)
+    r_squared = r*r*100
+    n = len(salaries)
+    print("N: " + str(n))
     print("Slope: " + str('%.3f' % slope))
     print("Intercept: " + str('%.3f' % intercept))
     print("r: " + str('%.3f' % r))
-    print("R^2: " + str('%.3f' % (r*r*100)) + "%")
+    print("R^2: " + str('%.3f' % r_squared) + "%")
     print("P Value: " + str('%.3f' % p_value))
     print("Standard Error: " + str('%.3f' % std_err))
 
@@ -122,17 +128,34 @@ def salary_vs_test_scores(df_teachers, df_scores, subject):
     plt.title("Average Test Score vs Average Teacher Salary of Washington Schools")
     plt.xlabel("Average Teacher Salary of School (Dollars)")
     plt.ylabel("Average Percentage Met Standard in School Over All Grades for " + subject)
+    props = dict(boxstyle='round', facecolor='cyan', alpha=0.2)
+    plt.text(s="R^2 = " + str("%.3f" % r_squared) + "%", x=20000, y=90, bbox=props)
     plt.show()
     plt.close()
+
+    lin_reg = LinearRegression()
+    np_salaries = np.array(salaries)
+    np_experiences = np.array(experiences)
+    X = np.c_[np_salaries, np_experiences]
+    Y = np.array(scores)
+    lin_reg.fit(X, Y)
+    coeffs = lin_reg.coef_
+    intercept = lin_reg.intercept_
+    x_s = np.linspace(0, 100000, 300)
+    y_s = np.linspace(0, 30, 300)
+    predicted_score = coeffs[0]*x_s+coeffs[1]*y_s+intercept
+    print("z = " + str("%.3f" % coeffs[0]) + "*x + " + str("%.3f" % coeffs[1]) + "*y + " + str("%.3f" % intercept))
 
     # 3d plot of salaries, experiences and scores
     fig = plt.figure()
     ax = mplot3d.Axes3D(fig)
     ax.scatter(salaries, experiences, scores, s=4)
+    ax.plot3D(x_s, y_s, predicted_score, c="red")
     ax.set_xlabel("Average Teacher Salary of School (Dollars)")
     ax.set_ylabel("Average Teacher Experience of School (Years)")
     ax.set_zlabel("Average Percentage Met Standard in School Over All Grades for " + subject)
     plt.show()
+    plt.close()
 
 
 # make a histogram of all test scores
